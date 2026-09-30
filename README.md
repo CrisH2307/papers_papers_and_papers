@@ -15,7 +15,7 @@ Paper Fit is a Claude skill that treats paper selection as a requirements proble
 
 ### Option A: claude.ai (web, desktop, mobile)
 
-1. Download `paper-fit-skill.zip` from the Releases page.
+1. Download `paper-fit-skill.zip` from the [latest release](https://github.com/CrisH2307/papers_papers_and_papers/releases/latest).
 2. In Claude's settings, find the Skills section and upload the zip.
 3. Connect the research connectors in Claude's connector settings: **alphaXiv**, **Consensus**, and **Scholar Feed** if available.
 4. Start a chat: *"I need a paper for my ENGR 5570 project on ..."*
@@ -25,7 +25,7 @@ If your account belongs to an organization (for example a lab workspace), the ad
 ### Option B: Claude Code
 
 ```bash
-claude plugin marketplace add CrisH2307/paper-fit
+claude plugin marketplace add CrisH2307/papers_papers_and_papers
 claude plugin install paper-fit@paper-fit
 ```
 
@@ -40,7 +40,7 @@ The plugin registers the alphaXiv and Consensus MCP servers. Run `/mcp` once to 
 ## Help us evaluate it
 
 After each Fit Report, Paper Fit asks: *"Was the top pick right for your need? (1 to 5)"*.
-Please add your row to the lab's log (`templates/paper-fit-log.csv` shows the columns) or send it to me.
+Please send me your row (`templates/paper-fit-log.csv` shows the columns), or open an issue with it.
 See [docs/EVAL.md](docs/EVAL.md) for how we compare it against plain search.
 
 ## Feedback
