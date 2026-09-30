@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "alphaxiv": {
+      "type": "http",
+      "url": "https://api.alphaxiv.org/mcp/v1"
+    },
+    "consensus": {
+      "type": "http",
+      "url": "https://mcp.consensus.app/mcp"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "paper-fit",
+  "displayName": "Paper Fit",
+  "version": "0.1.0",
+  "description": "Find the RIGHT paper for a specific need (assignment, project, real-world build), read it well, and turn it into action. Treats paper selection as a requirements problem.",
+  "author": {
+    "name": "Cris Huynh",
+    "url": "https://github.com/CrisH2307"
+  },
+  "repository": "https://github.com/CrisH2307/paper-fit",
+  "license": "MIT",
+  "keywords": ["research", "literature", "papers", "requirements-engineering", "software-engineering", "education"]
+}

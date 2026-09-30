@@ -1,0 +1,17 @@
+{
+  "name": "paper-fit",
+  "owner": {
+    "name": "Cris Huynh",
+    "url": "https://github.com/CrisH2307"
+  },
+  "metadata": {
+    "description": "Research skills for finding, reading and applying the right paper."
+  },
+  "plugins": [
+    {
+      "name": "paper-fit",
+      "source": "./",
+      "description": "Find the RIGHT paper for a specific need, read it well, and apply it."
+    }
+  ]
+}
