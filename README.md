@@ -9,8 +9,6 @@ Paper Fit is a Claude skill that treats paper selection as a requirements proble
 3. **READ**: guided three-pass reading (what it is, how it works, can I trust it), connected to your course.
 4. **APPLY**: turn the paper into an assignment angle, a mini replication, a project plan, or a critique memo.
 
-Built first for Dr. Kundi Yao's lab at Ontario Tech University. Lab first, then courses, then public.
-
 > It will not write graded assignment text for you. It helps you find, understand, plan and critique. You do the work.
 
 ## Install
