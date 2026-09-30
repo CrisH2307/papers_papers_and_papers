@@ -40,7 +40,7 @@ The plugin registers the alphaXiv and Consensus MCP servers. Run `/mcp` once to 
 ## Help us evaluate it
 
 After each Fit Report, Paper Fit asks: *"Was the top pick right for your need? (1 to 5)"*.
-Please add your row to the lab's log (`templates/paper-fit-log.csv` shows the columns) or send it to Cris.
+Please add your row to the lab's log (`templates/paper-fit-log.csv` shows the columns) or send it to me.
 See [docs/EVAL.md](docs/EVAL.md) for how we compare it against plain search.
 
 ## Feedback
