@@ -3,7 +3,7 @@ name: paper-fit
 description: Find the RIGHT research paper for a specific need (course assignment, project, real-world build), then guide deep reading and turn the paper into action. Use when someone asks for a paper for an assignment or project, "find me a paper on X for Y", "which paper should I use", "help me understand this paper", or "how do I use this paper in my project".
 ---
 
-# Paper Fit (v0)
+# Paper Fit (v0.2.0)
 
 Finding papers is easy. Finding the paper that fits the actual need is the hard part.
 This skill treats paper selection as a requirements problem: write down the need first,
@@ -21,6 +21,7 @@ but the workflow works for any CS/AI topic.
 5. **"Not found" is not "does not exist."** Always report which sources and queries were used.
 6. **The student does the graded work.** Explain, plan, and critique. Do not write graded assignment text for them. Follow the course's AI-use policy if they mention one.
 7. **Clear language.** Many users are ESL. Short sentences, define terms on first use, no filler.
+8. **Spend tokens where judgment happens.** Search wide but cheap, verify narrow. Do not restate abstracts or paper text in your reasoning; keep one short line per candidate.
 
 ## Routing
 
@@ -60,6 +61,26 @@ Out of scope: <what we are NOT looking for>
 
 ## Stage 2: FIND (match papers to the requirement)
 
+### Jev mode (optional, saves tokens on screening)
+
+Use Jev mode only when **all** of these are true; otherwise skip to 2a:
+- You can run a shell on the user's own machine (Claude Code, or a device shell linked to their computer).
+- The user has an OpenRouter key at `~/.config/jev/openrouter_key` or in `$OPENROUTER_API_KEY`.
+- The user has not said to turn Jev mode off.
+
+Steps:
+1. Tell the user once: "Jev mode sends the goal, the requirement wording and public paper abstracts to OpenRouter (TypeSafe Jev)."
+2. Write `spec.json` from the confirmed Need Spec. Keep `goal` to one sentence with **no private project details**.
+   ```json
+   {"goal": "...", "queries": ["2-3 phrases in the user's terms"],
+    "must": {"R1": "...", "R2": "..."}, "deal_breakers": {"D1": "..."},
+    "year_min": 2018, "max_candidates": 30, "top_k": 6}
+   ```
+3. Run `python3 scripts/jev_screen.py spec.json` from this skill's folder (in Claude Code: `${CLAUDE_PLUGIN_ROOT}/skills/paper-fit/scripts/jev_screen.py`). It searches arXiv, asks Jev one batched set of questions per paper, ranks in code, and prints a compact JSON table. Exit code 2 means no key: use the normal flow.
+4. Use its `top` list as the screened shortlist. This replaces 2b and the screening half of 2c. It searches **arXiv only**: if the need requires peer-reviewed venues, also run one Consensus search and merge.
+5. Jev labels are screening hints, not proof. Anything marked `?`, `not stated`, or "Claude's call" must be checked during verification. Then verify the top 4 as in 2c.
+6. In COVERAGE, write: "Screened N arXiv candidates with Jev (cost $X)." using the script's `stats`.
+
 ### 2a. Query plan
 Derive 2 to 3 query groups from the spec, using the user's own terms:
 - goal term + domain
@@ -67,17 +88,21 @@ Derive 2 to 3 query groups from the spec, using the user's own terms:
 - must-have constraint + topic (e.g. "benchmark", "empirical study", "dataset")
 
 ### 2b. Retrieve (use what is connected; fall back in order)
-1. **alphaXiv** `discover_papers`: one broad call covering all facets (only 2 searches per message). Keywords must be the user's terms, no guessed expansions.
-2. **Scholar Feed** `search_papers`: semantic search. Useful filters: `has_code=true` (if code is a must-have), `sort="balanced"` (relevant and well-cited), `contribution_type` (e.g. `empirical_study`, `benchmark`, `survey`). Semantic search can miss older canonical papers: if the top abstracts keep naming a baseline, look that paper up directly, or use `get_foundational_lineage`.
-3. **Consensus** `search`: peer-reviewed coverage. Set `exclude_preprints=true` only if "peer-reviewed" is a must-have.
-4. **Fallback:** web search limited to arxiv.org, dl.acm.org, ieeexplore.ieee.org, semanticscholar.org, dblp.org.
-5. **One-hop expansion (optional):** for the best 1 to 2 candidates, check references and citations (Scholar Feed `get_citations`) for a better-fitting neighbour.
+**Budget: at most one search call per source (3 calls total).** Do not re-search unless fewer than 3 candidates pass screening.
 
-Target a candidate pool of 15 to 30. Deduplicate by ID.
+1. **alphaXiv** `discover_papers`: one broad call covering all facets. Keywords must be the user's terms, no guessed expansions.
+2. **Scholar Feed** `search_papers`: one semantic search call. Useful filters: `has_code=true` (if code is a must-have), `sort="balanced"` (relevant and well-cited), `contribution_type` (e.g. `empirical_study`, `benchmark`, `survey`). Semantic search can miss older canonical papers: if the top abstracts keep naming a baseline, look that paper up directly, or use `get_foundational_lineage`.
+3. **Consensus** `search`: one call, for peer-reviewed coverage. Set `exclude_preprints=true` only if "peer-reviewed" is a must-have.
+4. **Fallback:** web search limited to arxiv.org, dl.acm.org, ieeexplore.ieee.org, semanticscholar.org, dblp.org.
+5. **One-hop expansion (only if fewer than 3 papers reach Good after verification):** for the best 1 to 2 candidates, check references and citations (Scholar Feed `get_citations`) for a better-fitting neighbour.
+
+Target a candidate pool of 15 to 30. Deduplicate by ID. Note each candidate as one line: `ID | year | title | which deal-breaker or must-have it may hit`.
 
 ### 2c. Screen, then verify
-- **Screen** titles and abstracts against deal-breakers. Keep about 8.
-- **Verify** the top ~8 against each must-have using the paper text, not just the abstract: alphaXiv `answer_pdf_queries` (batch all requirement questions for one paper into one call) or Scholar Feed `fetch_fulltext` with only the sections needed (usually `method` and `results`).
+- **Screen** titles and abstracts against deal-breakers. Keep a shortlist of 6, ranked.
+- **Verify only the top 4** against each must-have using the paper text, not just the abstract. Verify #5 and #6 only if a top-4 paper fails a must-have.
+  - **First choice:** alphaXiv `answer_pdf_queries`. It returns only the pages most relevant to your questions, but that is still several pages (roughly 10k to 15k tokens per paper), so this step is the most expensive part of Paper Fit. Batch all requirement questions for one paper into one call, and ask for the section or table that proves each answer.
+  - **Fallback** (paper not on alphaXiv): Scholar Feed `fetch_fulltext` for the shortlist in one call, with only the one section the must-haves need (usually `method`). Never `sections=["all"]`.
 
 ### 2d. Output: Fit Report
 

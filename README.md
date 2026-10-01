@@ -127,6 +127,27 @@ To publish a new release (maintainers only): update `version` in `.claude-plugin
 
 ---
 
+## Optional: Jev mode (advanced, saves tokens)
+
+Paper Fit can hand the "read 30 abstracts and rank them" step to **[Jev](https://docs.typesafe.ai)** (by TypeSafe, via OpenRouter), a small model that only scores and sorts. Claude then reads a short ranked table instead of every abstract, and still does the checking and writing.
+
+In our first test, Jev screened 17 arXiv papers in about 7 seconds for **less than $0.001**, and the result Claude had to read was **11 times smaller** than the raw abstracts.
+
+**You need:** Claude Code (or a Claude chat linked to your computer) and your own [OpenRouter](https://openrouter.ai) API key.
+
+1. Save your key on your computer (only once):
+   ```bash
+   mkdir -p ~/.config/jev && chmod 700 ~/.config/jev
+   printf '%s' 'YOUR_OPENROUTER_KEY' > ~/.config/jev/openrouter_key && chmod 600 ~/.config/jev/openrouter_key
+   ```
+2. Use Paper Fit as usual. When a key is found, it switches to Jev mode for screening automatically and tells you.
+
+**Privacy:** Jev mode sends your goal, your requirement wording and public paper abstracts to OpenRouter. Don't put private project details in your request when it's on. Jev mode searches **arXiv only**, so for peer-reviewed journals Paper Fit adds one Consensus search.
+
+Without a key, nothing changes: Paper Fit uses the normal flow.
+
+---
+
 ## Help make it better
 
 After each Fit Report, Paper Fit asks: *"Was the top pick right for your need? (1 to 5)"*.

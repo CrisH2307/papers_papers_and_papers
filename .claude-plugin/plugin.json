@@ -1,7 +1,7 @@
 {
   "name": "paper-fit",
   "displayName": "Paper Fit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Find the RIGHT paper for a specific need (assignment, project, real-world build), read it well, and turn it into action. Treats paper selection as a requirements problem.",
   "author": {
     "name": "Cris Huynh",
